@@ -5,30 +5,49 @@ import './HomePage.css';
 
 const services = [
   {
-    title: 'Monitoring Kota',
-    text: 'Pantau lalu lintas, kualitas udara, energi, transportasi, dan fasilitas publik dalam satu dashboard.',
+    icon: '01',
+    title: 'Smart Governance',
+    text: 'Layanan publik, laporan warga, dan panel admin untuk tata kelola kota yang responsif.',
   },
   {
-    title: 'Layanan Warga',
-    text: 'Warga dapat mengirim laporan banjir, pengaduan umum, voting kebijakan, survei layanan, dan diskusi kebijakan.',
+    icon: '02',
+    title: 'Smart Mobility',
+    text: 'Pantau lalu lintas, transportasi, dan peta kota agar mobilitas warga lebih terarah.',
   },
   {
-    title: 'Layanan Publik',
-    text: 'Informasi rumah sakit, CCTV, zona aman, sekolah, universitas, lowongan kerja, dan UMKM lokal.',
+    icon: '03',
+    title: 'Smart Living',
+    text: 'Akses fasilitas publik, zona aman, layanan kesehatan, pendidikan, dan informasi warga.',
   },
   {
-    title: 'Panel Admin',
-    text: 'Admin dapat mengelola kebijakan, laporan warga, pengumuman, master data, alert bencana, dan log aktivitas.',
+    icon: '04',
+    title: 'Smart Environment',
+    text: 'Monitoring udara, air bersih, energi, dan sampah untuk lingkungan kota yang berkelanjutan.',
   },
 ];
 
 const highlights = [
-  'React Vite',
-  'Express API',
-  'MySQL Sequelize',
-  'MongoDB Logs',
-  'Recharts',
+  'Dashboard Kota',
+  'Laporan Warga',
   'OpenStreetMap',
+  'Data Realtime',
+  'Panel Admin',
+  'Layanan Publik',
+];
+
+const stats = [
+  { value: '25+', label: 'Fitur Kota' },
+  { value: '12', label: 'Layanan Digital' },
+  { value: '2', label: 'Database' },
+];
+
+const pillars = [
+  'Smart Economy',
+  'Smart People',
+  'Smart Governance',
+  'Smart Mobility',
+  'Smart Environment',
+  'Smart Living',
 ];
 
 export default function HomePage() {
@@ -43,13 +62,13 @@ export default function HomePage() {
           </Link>
           <nav className="home-nav-links">
             <a href="#layanan">Layanan</a>
-            <a href="#fitur">Fitur</a>
+            <a href="#pilar">Pilar Smart City</a>
             <a href="#about">About Us</a>
             <a href="#demo">Demo</a>
             {user ? (
-              <Link to="/dashboard" className="home-button home-button-gold">Dashboard</Link>
+              <Link to="/dashboard" className="home-button home-button-primary">Dashboard</Link>
             ) : (
-              <Link to="/login" className="home-button home-button-outline">Login</Link>
+              <Link to="/login" className="home-button home-button-primary">Login</Link>
             )}
           </nav>
         </div>
@@ -59,46 +78,55 @@ export default function HomePage() {
         <section className="home-hero">
           <div className="home-container hero-grid">
             <div className="hero-copy">
-              <span className="hero-badge">Portal Digital Warga</span>
-              <h1>Smart City Medan</h1>
+              <span className="hero-badge">Transformasi Digital Medan</span>
+              <h1>Membangun <span>Kota Pintar</span> untuk Warga Medan</h1>
               <p>
-                Platform terpadu untuk memantau kondisi kota, mengelola layanan publik,
-                menerima laporan warga, dan mendukung pengambilan kebijakan berbasis data.
+                Platform terpadu untuk memantau kondisi kota, mempercepat layanan publik,
+                menerima laporan warga, dan membantu pengambilan keputusan berbasis data.
               </p>
               <div className="hero-actions">
-                <Link to={user ? '/dashboard' : '/login'} className="home-button home-button-gold home-button-large">
+                <Link to={user ? '/dashboard' : '/login'} className="home-button home-button-light home-button-large">
                   Mulai Gunakan
                 </Link>
-                <a href="#layanan" className="home-button home-button-dark home-button-large">Lihat Layanan</a>
+                <a href="#pilar" className="home-button home-button-ghost home-button-large">Pelajari Pilar</a>
+              </div>
+              <div className="hero-stats">
+                {stats.map(item => (
+                  <div key={item.label}>
+                    <strong>{item.value}</strong>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="hero-panel" aria-label="Ringkasan fitur Smart City">
-              <div className="panel-topline">
+            <div className="hero-visual" aria-label="Ilustrasi fitur Smart City Medan">
+              <div className="orbit-card orbit-card-main">
+                <span className="city-icon">▦</span>
+              </div>
+              <div className="orbit-card orbit-card-blue">⌁</div>
+              <div className="orbit-card orbit-card-gold">⚙</div>
+              <div className="orbit-card orbit-card-navy">⌂</div>
+              <div className="orbit-ring"></div>
+              <div className="hero-panel">
                 <span>Status Sistem</span>
                 <strong>Online</strong>
-              </div>
-              <div className="metric-grid">
-                <div><strong>25</strong><span>Fitur Kota</span></div>
-                <div><strong>2</strong><span>Database</span></div>
-                <div><strong>1</strong><span>Portal Admin</span></div>
-                <div><strong>REST</strong><span>API</span></div>
-              </div>
-              <div className="panel-strip">
-                {highlights.map(item => <span key={item}>{item}</span>)}
+                <p>Data kota aktif dipantau dari satu portal.</p>
               </div>
             </div>
           </div>
+          <div className="hero-wave" aria-hidden="true"></div>
         </section>
 
         <section id="layanan" className="home-section">
           <div className="home-container">
             <div className="section-heading">
-              <span>Jasa yang Disediakan</span>
-              <h2>Layanan digital untuk warga dan pemerintah kota</h2>
+              <span>Layanan Utama</span>
+              <h2>Solusi digital untuk warga dan pemerintah kota</h2>
             </div>
             <div className="service-grid">
               {services.map(service => (
                 <article className="service-card" key={service.title}>
+                  <span className="service-icon">{service.icon}</span>
                   <h3>{service.title}</h3>
                   <p>{service.text}</p>
                 </article>
@@ -107,22 +135,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="fitur" className="feature-band">
+        <section id="pilar" className="feature-band">
           <div className="home-container feature-grid">
             <div>
-              <span className="section-kicker">Tampilan Frontend</span>
-              <h2>Clean landing page untuk menjelaskan layanan aplikasi</h2>
+              <span className="section-kicker">Enam Pilar Utama</span>
+              <h2>Fondasi Smart City yang terintegrasi dan berkelanjutan</h2>
               <p>
-                Halaman awal dibuat lebih ringan dengan navigasi sederhana, tombol jelas,
-                card layanan, dan grid responsive yang konsisten dengan warna Smart City.
+                Setiap fitur di portal ini dirancang untuk mendukung pilar kota pintar:
+                layanan yang terbuka, mobilitas lancar, lingkungan sehat, dan warga yang aktif.
               </p>
             </div>
             <div className="feature-list">
-              <span>Header bersih</span>
-              <span>CTA utama</span>
-              <span>Card layanan ringkas</span>
-              <span>Grid responsive</span>
-              <span>Demo access</span>
+              {pillars.map(item => <span key={item}>{item}</span>)}
             </div>
           </div>
         </section>
@@ -131,7 +155,7 @@ export default function HomePage() {
           <div className="home-container about-grid">
             <div>
               <span className="section-kicker">About Us</span>
-              <h2>Dibangun untuk simulasi layanan kota digital yang modern.</h2>
+              <h2>Dibangun sebagai portal layanan kota digital yang modern.</h2>
               <p>
                 Smart City Medan adalah project akademik yang dirancang untuk menampilkan
                 bagaimana data kota, layanan warga, laporan publik, dan panel admin dapat
@@ -158,10 +182,10 @@ export default function HomePage() {
           <div className="home-container demo-card">
             <div>
               <span>Siap Demo</span>
-              <h2>Masuk sebagai guest untuk mencoba fitur warga.</h2>
+              <h2>Masuk untuk mencoba layanan Smart City Medan.</h2>
               <p>Untuk admin, gunakan akun dengan role admin agar menu Panel Admin terbuka.</p>
             </div>
-            <Link to={user ? '/dashboard' : '/login'} className="home-button home-button-gold home-button-large">
+            <Link to={user ? '/dashboard' : '/login'} className="home-button home-button-light home-button-large">
               {user ? 'Buka Dashboard' : 'Login / Guest Mode'}
             </Link>
           </div>
@@ -182,7 +206,7 @@ export default function HomePage() {
           <div>
             <h4>Navigasi</h4>
             <a href="#layanan">Layanan</a>
-            <a href="#fitur">Fitur</a>
+            <a href="#pilar">Pilar Smart City</a>
             <a href="#about">About Us</a>
             <Link to={user ? '/dashboard' : '/login'}>Dashboard</Link>
           </div>
@@ -203,7 +227,7 @@ export default function HomePage() {
         </div>
         <div className="home-container footer-bottom">
           <span>© 2026 Smart City Medan. Project akademik.</span>
-          <span>React · Express · MySQL · MongoDB</span>
+          <span>{highlights.slice(0, 4).join(' · ')}</span>
         </div>
       </footer>
     </div>
