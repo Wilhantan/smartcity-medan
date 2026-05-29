@@ -34,5 +34,17 @@
     "security_answer": "$2a$10$BaQ7IlKPfBG.n.1mn1ZOxeaZw2nSVtWWA6uKYuUTkFJrBFsVejYe.",
     "created_at": "2026-05-02T01:23:37.000Z",
     "updated_at": "2026-05-02T01:25:36.600Z"
+  },
+  {
+    "nama": "Dei",
+    "email": "dei@gmail.com",
+    "password": "$2a$10$ynd6pHRFaS6hIiEjR3jF9OVQ0S1/Nen.H4u6jzTlNMzacxvRsG6R6",
+    "kota": "Medan",
+    "role": "warga",
+    "foto_profil": null,
+    "security_question": "Nama hewan peliharaan pertama kamu?",
+    "security_answer": "$2a$10$9WqrAqy9YdPMvngigVXilOPxYLsK8ZkUxLqQXFdQqHUwxLdX9Rfoq",
+    "created_at": "2026-05-29T11:40:04.436Z",
+    "updated_at": "2026-05-29T11:40:04.484Z"
   }
 ]

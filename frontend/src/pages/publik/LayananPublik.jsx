@@ -10,12 +10,12 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import './LayananPublik.css';
 
-const GOLD = '#C9A84C';
-const GOLD_LIGHT = '#D4AF7A';
-const NAVY = '#0A1628';
-const BLUE = '#2471A3';
+const GOLD = '#E3B473';
+const GOLD_LIGHT = '#F0C98A';
+const NAVY = '#111E43';
+const BLUE = '#043CB1';
 const RED = '#C0392B';
-const PURPLE = '#8E44AD';
+const PURPLE = '#7C5CFF';
 
 const tabs = [
   ['rs', 'Rumah Sakit'],
@@ -169,7 +169,7 @@ export default function LayananPublik() {
           <div className="pub-head"><h2>Statistik Kesehatan Kota</h2><span>Penyakit dan vaksinasi per periode</span></div>
           <ResponsiveContainer width="100%" height={360}>
             <BarChart data={healthByPeriod}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#EDF0F7" />
               <XAxis dataKey="periode" />
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
@@ -222,7 +222,7 @@ export default function LayananPublik() {
             <div className="pub-head"><h2>Data UMKM & Ekonomi Lokal</h2><span>Sebaran usaha dan statistik ekonomi</span></div>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={umkmStats}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#EDF0F7" />
                 <XAxis dataKey="kategori" />
                 <YAxis tickFormatter={value => `${value / 1000000} jt`} />
                 <Tooltip content={<CustomTooltip />} />

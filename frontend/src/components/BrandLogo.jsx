@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import './BrandLogo.css';
 
-export default function BrandLogo({ className = '', compact = false }) {
+export default function BrandLogo({ className = '', compact = false, variant = 'blue' }) {
   const [failed, setFailed] = useState(false);
+  const logoSrc = variant === 'white' ? '/logo-putih.png' : '/logo-biru.png';
 
   if (failed) {
     return (
-      <span className={`brand-logo brand-logo-fallback ${compact ? 'compact' : ''} ${className}`}>
+      <span className={`brand-logo brand-logo-fallback ${variant} ${compact ? 'compact' : ''} ${className}`}>
         Medan Smart City
       </span>
     );
@@ -14,8 +15,8 @@ export default function BrandLogo({ className = '', compact = false }) {
 
   return (
     <img
-      className={`brand-logo ${compact ? 'compact' : ''} ${className}`}
-      src="/medan-smart-city-logo.png"
+      className={`brand-logo ${variant} ${compact ? 'compact' : ''} ${className}`}
+      src={logoSrc}
       alt="Medan Smart City"
       onError={() => setFailed(true)}
     />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -29,6 +29,31 @@ const tabs = [
   ['pengumuman', 'Pengumuman'],
 ];
 
+const roadOptions = [
+  { nama: 'Jl. Gatot Subroto', ruas: 'Simpang Pos - Simpang Sunggal', lat: 3.59435, lng: 98.6472 },
+  { nama: 'Jl. Adam Malik', ruas: 'Simpang Sei Sikambing - Simpang Glugur', lat: 3.6039, lng: 98.67505 },
+  { nama: 'Jl. Diponegoro', ruas: 'Simpang Rambung - Simpang Aksara', lat: 3.5788, lng: 98.68745 },
+  { nama: 'Jl. Sisingamangaraja', ruas: 'Simpang Limun - Simpang Simalingkar', lat: 3.541, lng: 98.6728 },
+  { nama: 'Jl. Brigjen Katamso', ruas: 'Simpang Joni - Simpang Juanda', lat: 3.57555, lng: 98.7055 },
+  { nama: 'Jl. Guru Patimpus', ruas: 'Simpang Glugur - Simpang Pos', lat: 3.5936, lng: 98.6775 },
+  { nama: 'Jl. Yos Sudarso', ruas: 'Belawan - Simpang Mabar', lat: 3.6728, lng: 98.69585 },
+  { nama: 'Jl. Ring Road', ruas: 'Simpang Padang Bulan - Simpang Simalingkar', lat: 3.555, lng: 98.64 },
+  { nama: 'Jl. Kapten Maulana Lubis', ruas: 'Balai Kota Medan', lat: 3.5908, lng: 98.6693 },
+  { nama: 'Jl. Prof. H.M. Yamin SH', ruas: 'Medan Timur', lat: 3.5913, lng: 98.6989 },
+  { nama: 'Jl. Teuku Cik Ditiro', ruas: 'Medan Baru', lat: 3.5793, lng: 98.6691 },
+  { nama: 'Jl. Budi Kemasyarakatan', ruas: 'Medan Sunggal', lat: 3.595, lng: 98.6421 },
+  { nama: 'Jl. Universitas', ruas: 'Kampus USU', lat: 3.57, lng: 98.65 },
+  { nama: 'Jl. Brigadir Jenderal Katamso', ruas: 'Taman Sri Deli', lat: 3.5912, lng: 98.6812 },
+  { nama: 'Jl. Karya Wisata', ruas: 'Medan Johor', lat: 3.5501, lng: 98.7005 },
+];
+
+const normalizeText = (value = '') => value
+  .toLowerCase()
+  .replace(/\b(jl|jalan)\.?\s*/g, '')
+  .replace(/[^\w\s]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
 const tooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -43,6 +68,30 @@ const tooltip = ({ active, payload, label }) => {
 
 const statusClass = (status = '') => `svc-status ${status.toLowerCase().replace(/\s+/g, '-')}`;
 
+function MapFocus({ lat, lng }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const nextLat = Number(lat);
+    const nextLng = Number(lng);
+    if (Number.isFinite(nextLat) && Number.isFinite(nextLng)) {
+      map.flyTo([nextLat, nextLng], Math.max(map.getZoom(), 14), { duration: 0.65 });
+    }
+  }, [lat, lng, map]);
+
+  return null;
+}
+
+function MapPicker({ onPick }) {
+  useMapEvents({
+    click(event) {
+      onPick(event.latlng);
+    },
+  });
+
+  return null;
+}
+
 export default function LayananKota() {
   const [active, setActive] = useState('banjir');
   const [data, setData] = useState(null);
@@ -50,10 +99,14 @@ export default function LayananKota() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [floodForm, setFloodForm] = useState({ nama: '', lokasi: '', deskripsi: '', lat: '3.5896', lng: '98.6739', foto: [] });
+  const [locationFocused, setLocationFocused] = useState(false);
   const [reportForm, setReportForm] = useState({ nama: '', kategori: 'Infrastruktur', deskripsi: '', foto: [] });
   const [threadForm, setThreadForm] = useState({ policy_id: '', judul: '' });
   const [commentText, setCommentText] = useState({});
   const [surveiPeriode, setSurveiPeriode] = useState('Q4');
+  const [osmRoads, setOsmRoads] = useState([]);
+  const [roadSearchLoading, setRoadSearchLoading] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
 
   const load = async () => {
     const [overview, threadRes] = await Promise.all([
@@ -68,6 +121,34 @@ export default function LayananKota() {
     load().catch(() => setMessage('Gagal memuat data layanan kota.')).finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    const query = floodForm.lokasi.trim();
+    if (query.length < 3 || !locationFocused) {
+      setOsmRoads([]);
+      setRoadSearchLoading(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setRoadSearchLoading(true);
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const res = await api.get('/city-services/roads/search', { params: { q: query } });
+        if (!cancelled) setOsmRoads(res.data.data || []);
+      } catch {
+        if (!cancelled) setOsmRoads([]);
+      } finally {
+        if (!cancelled) setRoadSearchLoading(false);
+      }
+    }, 450);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [floodForm.lokasi, locationFocused]);
+
   const policyStats = (policy) => {
     const votes = policy.votes || [];
     const setuju = votes.filter(v => v.pilihan === 'setuju').length;
@@ -79,6 +160,88 @@ export default function LayananKota() {
       setujuPct: total ? Math.round((setuju / total) * 100) : 0,
       tidakPct: total ? Math.round(((total - setuju) / total) * 100) : 0,
     };
+  };
+
+  const roadSuggestions = useMemo(() => {
+    const query = normalizeText(floodForm.lokasi);
+    if (query && osmRoads.length > 0) return osmRoads;
+    if (!query) return roadOptions.slice(0, 5);
+
+    return roadOptions
+      .map(road => {
+        const haystack = normalizeText(`${road.nama} ${road.ruas}`);
+        const score = haystack.startsWith(query) ? 2 : haystack.includes(query) ? 1 : 0;
+        return { ...road, score };
+      })
+      .filter(road => road.score > 0)
+      .sort((a, b) => b.score - a.score || a.nama.localeCompare(b.nama))
+      .slice(0, 5);
+  }, [floodForm.lokasi, osmRoads]);
+
+  const selectRoad = (road) => {
+    setFloodForm(prev => ({
+      ...prev,
+      lokasi: `${road.nama} - ${road.ruas}`,
+      lat: String(road.lat),
+      lng: String(road.lng),
+    }));
+    setLocationFocused(false);
+  };
+
+  const applyPickedLocation = async ({ lat, lng }, fallbackPrefix = 'Titik pilihan peta') => {
+    const nextLat = lat.toFixed(6);
+    const nextLng = lng.toFixed(6);
+    const fallbackLocation = `${fallbackPrefix} (${nextLat}, ${nextLng})`;
+
+    setFloodForm(prev => ({
+      ...prev,
+      lokasi: fallbackLocation,
+      lat: nextLat,
+      lng: nextLng,
+    }));
+    setLocationFocused(false);
+
+    try {
+      const res = await api.get('/city-services/roads/reverse', { params: { lat, lng } });
+      const location = res.data.data;
+      setFloodForm(prev => ({
+        ...prev,
+        lokasi: `${location.nama} - ${location.ruas}`,
+      }));
+    } catch {
+      setMessage(`${fallbackPrefix} dipakai. Nama lokasi belum bisa dibaca dari OpenStreetMap.`);
+      window.setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const selectMapPoint = (latlng) => {
+    applyPickedLocation(latlng);
+  };
+
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setMessage('Browser tidak mendukung deteksi lokasi saat ini.');
+      window.setTimeout(() => setMessage(''), 3000);
+      return;
+    }
+
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        await applyPickedLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }, 'Lokasi saat ini');
+        setDetectingLocation(false);
+      },
+      (error) => {
+        const denied = error.code === error.PERMISSION_DENIED;
+        setMessage(denied ? 'Izin lokasi ditolak. Klik peta atau ketik lokasi secara manual.' : 'Gagal mengambil lokasi saat ini.');
+        setDetectingLocation(false);
+        window.setTimeout(() => setMessage(''), 3000);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
   };
 
   const refreshAfter = async (text) => {
@@ -155,14 +318,36 @@ export default function LayananKota() {
           <form className="svc-panel svc-form" onSubmit={submitFlood}>
             <div className="svc-panel-head"><h2>Laporan Titik Banjir</h2><span>Input lokasi oleh warga</span></div>
             <input required placeholder="Nama pelapor" value={floodForm.nama} onChange={e => setFloodForm({ ...floodForm, nama: e.target.value })} />
-            <input required placeholder="Lokasi" value={floodForm.lokasi} onChange={e => setFloodForm({ ...floodForm, lokasi: e.target.value })} />
+            <div className="svc-road-field">
+              <input
+                required
+                placeholder="Ketik nama jalan, contoh: Gatot Subroto"
+                value={floodForm.lokasi}
+                onChange={e => setFloodForm({ ...floodForm, lokasi: e.target.value })}
+                onFocus={() => setLocationFocused(true)}
+                onBlur={() => window.setTimeout(() => setLocationFocused(false), 120)}
+              />
+              {locationFocused && roadSuggestions.length > 0 && (
+                <div className="svc-road-suggestions">
+                  {roadSuggestions.map(road => (
+                    <button type="button" key={`${road.nama}-${road.ruas}-${road.lat}-${road.lng}`} onMouseDown={() => selectRoad(road)}>
+                      <span><HeroIcon name="mapPin" /> {road.nama}</span>
+                      <small>{road.source === 'osm' ? 'OpenStreetMap · ' : ''}{road.ruas}</small>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {locationFocused && roadSearchLoading && (
+                <div className="svc-road-hint">Mencari lokasi di OpenStreetMap...</div>
+              )}
+            </div>
             <div className="svc-two">
               <div>
-                <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: '#aaa' }}>Latitude (cm)</label>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: '#aaa' }}>Latitude</label>
                 <input required type="number" step="any" placeholder="3.5896" value={floodForm.lat} onChange={e => setFloodForm({ ...floodForm, lat: e.target.value })} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: '#aaa' }}>Longitude (cm)</label>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: '#aaa' }}>Longitude</label>
                 <input required type="number" step="any" placeholder="98.6739" value={floodForm.lng} onChange={e => setFloodForm({ ...floodForm, lng: e.target.value })} />
               </div>
             </div>
@@ -241,9 +426,22 @@ export default function LayananKota() {
             <button className="svc-primary">Kirim Laporan</button>
           </form>
           <div className="svc-panel">
+            <div className="svc-map-actions">
+              <div className="svc-map-note"><HeroIcon name="mapPin" /> Klik peta untuk memilih titik laporan</div>
+              <button type="button" className="svc-location-btn" onClick={useCurrentLocation} disabled={detectingLocation}>
+                <HeroIcon name="mapPin" /> {detectingLocation ? 'Mengambil lokasi...' : 'Lokasi Saat Ini'}
+              </button>
+            </div>
             <div className="svc-map">
               <MapContainer center={[3.5896, 98.6739]} zoom={12} style={{ height: '100%', width: '100%' }}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="OpenStreetMap" />
+                <MapPicker onPick={selectMapPoint} />
+                <MapFocus lat={floodForm.lat} lng={floodForm.lng} />
+                {Number.isFinite(Number(floodForm.lat)) && Number.isFinite(Number(floodForm.lng)) && (
+                  <CircleMarker center={[Number(floodForm.lat), Number(floodForm.lng)]} radius={8} pathOptions={{ color: BLUE, fillColor: BLUE, fillOpacity: 0.85 }}>
+                    <Popup><strong>Titik laporan baru</strong><br />{floodForm.lokasi || 'Lokasi belum dipilih'}</Popup>
+                  </CircleMarker>
+                )}
                 {data.floods.map(item => (
                   <CircleMarker key={item.id} center={[item.lat, item.lng]} radius={10} pathOptions={{ color: RED, fillColor: GOLD, fillOpacity: 0.8 }}>
                     <Popup><strong>{item.lokasi}</strong><br />{item.deskripsi}<br />Status: {item.status}</Popup>

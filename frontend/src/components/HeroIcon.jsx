@@ -42,6 +42,7 @@ import {
   UserGroupIcon,
   UsersIcon,
   XCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 export const heroIcons = {
@@ -94,6 +95,7 @@ export const heroIcons = {
   warning: ExclamationCircleIcon,
   water: BeakerIcon,
   xCircle: XCircleIcon,
+  xMark: XMarkIcon,
 };
 
 export default function HeroIcon({ name, className = '', ...props }) {

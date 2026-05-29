@@ -29,10 +29,10 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   if (loading) return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      minHeight: '100vh', background: '#0A1628', color: '#C9A84C', flexDirection: 'column', gap: 16,
+      minHeight: '100vh', background: '#111E43', color: '#E3B473', flexDirection: 'column', gap: 16,
       fontSize: 18, fontFamily: 'Plus Jakarta Sans, sans-serif'
     }}>
-      <BrandLogo />
+      <BrandLogo variant="white" />
       <span>Memuat portal...</span>
     </div>
   );

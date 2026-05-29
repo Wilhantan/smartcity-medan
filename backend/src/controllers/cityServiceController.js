@@ -396,6 +396,88 @@ const ok = (res, data) => res.json({ success: true, data });
 const fail = (res, err) =>
   res.status(500).json({ success: false, message: err.message });
 
+exports.searchRoads = async (req, res) => {
+  try {
+    const query = String(req.query.q || "").trim();
+    if (query.length < 3) return ok(res, []);
+
+    const params = new URLSearchParams({
+      q: `${query}, Medan, Sumatera Utara, Indonesia`,
+      format: "jsonv2",
+      addressdetails: "1",
+      limit: "6",
+      countrycodes: "id",
+      viewbox: "98.55,3.75,98.80,3.45",
+      bounded: "0",
+    });
+
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+      headers: {
+        "User-Agent": "SmartCityMedanDemo/1.0",
+        "Accept-Language": "id",
+      },
+    });
+
+    if (!response.ok) throw new Error("Gagal mencari lokasi dari OpenStreetMap");
+
+    const results = await response.json();
+    const roads = results
+      .filter((item) => item.lat && item.lon)
+      .map((item) => ({
+        nama: item.name || item.display_name?.split(",")[0] || query,
+        ruas: item.display_name || "OpenStreetMap",
+        lat: Number(item.lat),
+        lng: Number(item.lon),
+        source: "osm",
+      }));
+
+    ok(res, roads);
+  } catch (err) {
+    fail(res, err);
+  }
+};
+
+exports.reverseRoad = async (req, res) => {
+  try {
+    const lat = Number(req.query.lat);
+    const lng = Number(req.query.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return res.status(400).json({ success: false, message: "Koordinat tidak valid" });
+    }
+
+    const params = new URLSearchParams({
+      lat: String(lat),
+      lon: String(lng),
+      format: "jsonv2",
+      addressdetails: "1",
+      zoom: "18",
+    });
+
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`, {
+      headers: {
+        "User-Agent": "SmartCityMedanDemo/1.0",
+        "Accept-Language": "id",
+      },
+    });
+
+    if (!response.ok) throw new Error("Gagal membaca lokasi dari OpenStreetMap");
+
+    const result = await response.json();
+    const address = result.address || {};
+    const roadName = address.road || address.neighbourhood || address.suburb || result.name;
+
+    ok(res, {
+      nama: roadName || "Titik pilihan peta",
+      ruas: result.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+      lat,
+      lng,
+      source: "osm",
+    });
+  } catch (err) {
+    fail(res, err);
+  }
+};
+
 exports.overview = async (req, res) => {
   try {
     await seedIfEmpty();

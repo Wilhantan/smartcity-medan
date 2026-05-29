@@ -6,6 +6,8 @@ const ctrl = require('../controllers/cityServiceController');
 router.use(authMiddleware);
 router.get('/', ctrl.overview);
 router.get('/water-detail', ctrl.waterDetail);
+router.get('/roads/search', ctrl.searchRoads);
+router.get('/roads/reverse', ctrl.reverseRoad);
 router.post('/floods', upload.single('foto'), ctrl.createFlood);
 router.post('/policies/:id/vote', ctrl.votePolicy);
 router.get('/threads', ctrl.threads);
