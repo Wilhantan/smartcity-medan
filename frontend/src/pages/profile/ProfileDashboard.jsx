@@ -19,6 +19,37 @@ const getInitials = (name = '') => {
     .join('');
 };
 
+const hasUsablePhoto = (src) => {
+  const value = String(src || '').trim();
+  return Boolean(value && value !== 'null' && value !== 'undefined');
+};
+
+function ProfileAvatar({ src, initials, imageClassName, fallbackClassName }) {
+  const [imageError, setImageError] = useState(false);
+  const showImage = hasUsablePhoto(src) && !imageError;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [src]);
+
+  if (showImage) {
+    return (
+      <img
+        src={src}
+        alt="foto profil"
+        className={imageClassName}
+        onError={() => setImageError(true)}
+      />
+    );
+  }
+
+  return (
+    <div className={fallbackClassName}>
+      {initials || 'U'}
+    </div>
+  );
+}
+
 export default function ProfileDashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -129,12 +160,12 @@ export default function ProfileDashboard() {
           </button>
 
           <div className="profile-side-card">
-            {account?.foto_profil
-              ? <img src={account.foto_profil} alt="foto profil" className="profile-avatar" />
-              : <div className="profile-avatar-placeholder">
-                  {getInitials(account?.nama)}
-                </div>
-            }
+            <ProfileAvatar
+              src={account?.foto_profil}
+              initials={getInitials(account?.nama)}
+              imageClassName="profile-avatar"
+              fallbackClassName="profile-avatar-placeholder"
+            />
             <h2>{account?.nama || 'Pengguna'}</h2>
             <p>{account?.email || '-'}</p>
             <span className="profile-badge">
@@ -185,12 +216,12 @@ export default function ProfileDashboard() {
 
             <div className="profile-form-layout">
               <div className="profile-photo-panel">
-                {previewPhoto
-                  ? <img src={previewPhoto} alt="foto profil" className="profile-photo-preview" />
-                  : <div className="profile-photo-preview placeholder">
-                      {previewInitials}
-                    </div>
-                }
+                <ProfileAvatar
+                  src={previewPhoto}
+                  initials={previewInitials}
+                  imageClassName="profile-photo-preview"
+                  fallbackClassName="profile-photo-preview placeholder"
+                />
                 <strong>Profile Photo</strong>
                 <span>PNG atau JPG untuk foto profil akun.</span>
               </div>
