@@ -14,8 +14,8 @@ const NAVY = '#111E43';
 const BLUE = '#043CB1';
 const GOLD2 = '#F0C98A';
 
-const StatCard = ({ icon, label, value, unit, sub, color, trend = 'up' }) => (
-  <div className="stat-card">
+const StatCard = ({ icon, label, value, unit, sub, color, trend = 'up', delay = 0 }) => (
+  <div className="stat-card" data-reveal="fade-up" style={{ '--reveal-delay': `${delay}ms` }}>
     <div className="stat-head">
       <div className="stat-label">{label}</div>
       <div className="stat-icon" style={{ background: color + '18', color }}>
@@ -76,6 +76,27 @@ export default function DashboardKota() {
     load();
   }, []);
 
+  useEffect(() => {
+    if (loading) return undefined;
+    const revealItems = Array.from(document.querySelectorAll('[data-reveal]'));
+    if (!revealItems.length) return undefined;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      rootMargin: '0px 0px -5% 0px',
+      threshold: 0.1,
+    });
+
+    revealItems.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, [loading]);
+
   if (loading) return (
     <Layout title="Dashboard Kota" subtitle="Statistik & Monitoring Smart City Medan">
       <div className="loading-state">Memuat data dashboard...</div>
@@ -89,27 +110,27 @@ export default function DashboardKota() {
   return (
     <Layout title="Dashboard Kota" subtitle="Statistik & Monitoring Smart City Medan">
       <div className="stats-grid">
-        <StatCard icon="people" label="Total Warga" value={(summary?.populasi || 0).toLocaleString('id-ID')} unit=" jiwa" sub="8.5% naik dari periode lalu" color={BLUE} />
-        <StatCard icon="map" label="Kepadatan" value={(summary?.kepadatan || 0).toLocaleString('id-ID')} unit=" /km²" sub="1.3% naik dari pekan lalu" color={GOLD} />
-        <StatCard icon="energy" label="Total Energi" value={(summary?.energi_gwh || 0).toFixed(1)} unit=" GWh" sub="4.3% turun dari kemarin" color="#27c98b" trend="down" />
-        <StatCard icon="cloud" label="AQI Rata-rata" value={(summary?.aqi_rata || 0).toFixed(0)} unit=" AQI" sub="1.8% naik dari kemarin" color="#ff8b8b" />
+        <StatCard icon="people" label="Total Warga" value={(summary?.populasi || 0).toLocaleString('id-ID')} unit=" jiwa" sub="8.5% naik dari periode lalu" color={BLUE} delay={0} />
+        <StatCard icon="map" label="Kepadatan" value={(summary?.kepadatan || 0).toLocaleString('id-ID')} unit=" /km²" sub="1.3% naik dari pekan lalu" color={GOLD} delay={60} />
+        <StatCard icon="energy" label="Total Energi" value={(summary?.energi_gwh || 0).toFixed(1)} unit=" GWh" sub="4.3% turun dari kemarin" color="#27c98b" trend="down" delay={120} />
+        <StatCard icon="cloud" label="AQI Rata-rata" value={(summary?.aqi_rata || 0).toFixed(0)} unit=" AQI" sub="1.8% naik dari kemarin" color="#ff8b8b" delay={180} />
       </div>
 
       {overview && (
         <div className="overview-grid">
-          <div className="overview-card">
+          <div className="overview-card" data-reveal="fade-up" style={{ '--reveal-delay': '240ms' }}>
             <span className="overview-num">{overview.totalFasilitas}</span>
             <span className="overview-lbl">Fasilitas Publik</span>
           </div>
-          <div className="overview-card">
+          <div className="overview-card" data-reveal="fade-up" style={{ '--reveal-delay': '300ms' }}>
             <span className="overview-num">{overview.totalRute}</span>
             <span className="overview-lbl">Rute Aktif</span>
           </div>
-          <div className="overview-card">
+          <div className="overview-card" data-reveal="fade-up" style={{ '--reveal-delay': '360ms' }}>
             <span className="overview-num">{overview.totalJalan}</span>
             <span className="overview-lbl">Ruas Jalan Dipantau</span>
           </div>
-          <div className="overview-card">
+          <div className="overview-card" data-reveal="fade-up" style={{ '--reveal-delay': '420ms' }}>
             <span className="overview-num">{overview.avgAqi}</span>
             <span className="overview-lbl">Rata-rata AQI Kota</span>
           </div>
@@ -117,7 +138,7 @@ export default function DashboardKota() {
       )}
 
       {/* Featured Section */}
-      <section className="dashboard-featured-section">
+      <section className="dashboard-featured-section" data-reveal="fade-up" style={{ '--reveal-delay': '480ms' }}>
         <div className="featured-header">
           <div>
             <span className="featured-badge">🔥 Fitur Unggulan Kota</span>
@@ -180,7 +201,7 @@ export default function DashboardKota() {
       </section>
 
       <div className="charts-grid">
-        <div className="chart-card chart-card-wide">
+        <div className="chart-card chart-card-wide" data-reveal="fade-up" style={{ '--reveal-delay': '540ms' }}>
           <div className="chart-header">
             <div>
               <h3>Statistik Detail Kota</h3>
@@ -205,7 +226,7 @@ export default function DashboardKota() {
           </ResponsiveContainer>
         </div>
 
-        <div className="chart-card">
+        <div className="chart-card" data-reveal="fade-up" style={{ '--reveal-delay': '600ms' }}>
           <div className="chart-header">
             <div>
               <h3>Konsumsi Energi</h3>
@@ -224,7 +245,7 @@ export default function DashboardKota() {
           </ResponsiveContainer>
         </div>
 
-        <div className="chart-card">
+        <div className="chart-card" data-reveal="fade-up" style={{ '--reveal-delay': '660ms' }}>
           <div className="chart-header">
             <div>
               <h3>Trend Kualitas Udara</h3>
@@ -243,7 +264,7 @@ export default function DashboardKota() {
           </ResponsiveContainer>
         </div>
 
-        <div className="chart-card">
+        <div className="chart-card" data-reveal="fade-up" style={{ '--reveal-delay': '720ms' }}>
           <div className="chart-header">
             <div>
               <h3>Kepadatan Penduduk</h3>
