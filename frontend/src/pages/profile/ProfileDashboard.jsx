@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Layout from '../../components/Layout';
 import { useAuth } from '../../context/AuthContext';
 import HeroIcon from '../../components/HeroIcon';
 import api from '../../utils/api';
@@ -151,8 +152,9 @@ export default function ProfileDashboard() {
   const previewPhoto = selectedPhotoPreview || account?.foto_profil;
 
   return (
-    <div className="profile-page">
-      <div className="profile-shell">
+    <Layout title="Akun Saya" subtitle="Kelola data profil dan informasi akun Smart City Medan">
+      <div className="profile-page">
+        <div className="profile-shell">
         <aside className="profile-side">
           <button className="profile-back" onClick={() => navigate('/dashboard')}>
             <HeroIcon name="arrowLeft" />
@@ -286,5 +288,6 @@ export default function ProfileDashboard() {
         </main>
       </div>
     </div>
-  );
+  </Layout>
+);
 }
