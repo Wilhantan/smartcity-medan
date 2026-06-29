@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from './Sidebar';
 import HeroIcon from './HeroIcon';
@@ -7,9 +7,62 @@ import './Layout.css';
 
 export default function Layout({ children, title, subtitle }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const isGuest = user?.isGuest || user?.email === 'guest@smartcity.local';
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const selectors = [
+        '[data-reveal]',
+        '.layout-page-title',
+        '.mon-section',
+        '.mon-card',
+        '.lay-section',
+        '.lay-card',
+        '.pub-panel',
+        '.pub-card',
+        '.stat-card',
+        '.overview-card',
+        '.chart-card',
+        '.admin-card',
+        '.peta-card',
+        '.ud-card',
+        '.ll-card',
+        '.trans-card',
+        '.air-card',
+        '.energi-card',
+        '.sampah-card',
+        '.profile-card'
+      ];
+      const items = Array.from(document.querySelectorAll(selectors.join(',')));
+
+      items.forEach((item, index) => {
+        if (!item.hasAttribute('data-reveal')) {
+          item.setAttribute('data-reveal', 'fade-up');
+          item.style.setProperty('--reveal-delay', `${(index % 8) * 50}ms`);
+        }
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        rootMargin: '0px 0px -5% 0px',
+        threshold: 0.05,
+      });
+
+      items.forEach((item) => observer.observe(item));
+      return () => observer.disconnect();
+    }, 40);
+
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   const closeProfileMenu = () => setProfileOpen(false);
 
