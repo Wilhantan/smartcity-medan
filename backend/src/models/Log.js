@@ -10,7 +10,7 @@ const logSchema = new mongoose.Schema({
            'TAMBAH_KEBIJAKAN', 'UPDATE_LAPORAN', 'TAMBAH_PENGUMUMAN',
            'EDIT_PENGUMUMAN', 'HAPUS_PENGUMUMAN', 'EDIT_KEBIJAKAN',
            'HAPUS_KEBIJAKAN', 'UPDATE_MASTER', 'TOGGLE_ALERT',
-           'EDIT_PROFIL', 'FORGOT_PASSWORD']
+           'EDIT_PROFIL', 'FORGOT_PASSWORD', 'GOOGLE_LOGIN']
   },
   detail: { type: String, default: '' },
   ipAddress: { type: String, default: '' },

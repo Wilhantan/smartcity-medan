@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import BrandLogo from '../../components/BrandLogo';
@@ -13,6 +13,44 @@ export default function Login() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1013401569429-demo.apps.googleusercontent.com',
+          callback: async (response) => {
+            setLoading(true);
+            try {
+              const res = await api.post('/auth/google', { credential: response.credential });
+              login(res.data.user, res.data.token);
+              navigate('/profil?edit=1');
+            } catch (err) {
+              setError(err.response?.data?.message || 'Gagal terhubung ke server (Port backend/frontend tidak cocok atau server mati).');
+            } finally {
+              setLoading(false);
+            }
+          }
+        });
+
+        const btnContainer = document.getElementById('google-official-btn');
+        if (btnContainer) {
+          window.google.accounts.id.renderButton(btnContainer, {
+            theme: 'outline',
+            size: 'large',
+            width: 340,
+            text: 'signin_with',
+            shape: 'pill'
+          });
+        }
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
 
   const handleChange = (e) => {
     const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -29,30 +67,6 @@ export default function Login() {
       navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal login.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await api.post('/auth/google', { email: 'warga.google@medan.go.id', nama: 'Warga Google Demo' });
-      login(res.data.user, res.data.token);
-      navigate('/dashboard');
-    } catch (err) {
-      // Fallback instant Google Login demo token
-      const googleUser = {
-        id: 999,
-        nama: 'Warga Google Demo',
-        email: 'warga.google@medan.go.id',
-        role: 'warga',
-        kota: 'Medan'
-      };
-      const dummyToken = 'google_demo_jwt_token_medan_smartcity';
-      login(googleUser, dummyToken);
-      navigate('/dashboard');
     } finally {
       setLoading(false);
     }
@@ -87,15 +101,9 @@ export default function Login() {
 
         {error && <div className="error-msg">{error}</div>}
 
-        <button type="button" className="btn btn-google" disabled={loading} onClick={handleGoogleLogin} style={{ marginBottom: 20, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px 16px', borderRadius: 12, border: '1px solid #dadce0', background: '#ffffff', color: '#3c4043', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <svg width="18" height="18" viewBox="0 0 18 18">
-            <path fill="#4285F4" d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z"/>
-            <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.41-1.57-5.13-3.74L.97 13.04C2.45 15.98 5.48 18 9 18z"/>
-            <path fill="#FBBC05" d="M3.87 10.78c-.19-.53-.3-1.1-.3-1.78s.11-1.25.3-1.78L.97 4.96C.35 6.19 0 7.56 0 9s.35 2.81.97 4.04l2.9-2.26z"/>
-            <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.45 2.02.97 4.96l2.9 2.26C4.59 5.05 6.62 3.58 9 3.58z"/>
-          </svg>
-          Masuk dengan Google
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20, width: '100%' }}>
+          <div id="google-official-btn"></div>
+        </div>
 
         <div className="auth-divider" style={{ marginBottom: 20 }}>atau login dengan email</div>
 

@@ -203,8 +203,27 @@ const logout = async (req, res) => {
 // ===== GOOGLE LOGIN =====
 const googleLogin = async (req, res) => {
   try {
-    const googleEmail = req.body.email || 'warga.google@medan.go.id';
-    const googleName = req.body.nama || 'Warga Google Demo';
+    let googleEmail = req.body.email;
+    let googleName = req.body.nama;
+    let googlePicture = req.body.foto_profil;
+
+    if (req.body.credential) {
+      try {
+        const decoded = jwt.decode(req.body.credential);
+        if (decoded && decoded.email) {
+          googleEmail = decoded.email;
+          googleName = decoded.name || decoded.email.split('@')[0];
+          googlePicture = decoded.picture || null;
+        }
+      } catch (e) {
+        console.error('Google token decode error:', e);
+      }
+    }
+
+    if (!googleEmail) {
+      googleEmail = 'warga.google@medan.go.id';
+      googleName = 'Warga Google Demo';
+    }
 
     let user = await User.findOne({ where: { email: googleEmail } });
     if (!user) {
@@ -215,10 +234,14 @@ const googleLogin = async (req, res) => {
         password: dummyPassword,
         kota: 'Medan',
         role: 'warga',
+        foto_profil: googlePicture || null,
         security_question: 'Google OAuth',
         security_answer: dummyPassword,
       });
       saveUserToJson(user);
+    } else if (googlePicture && user.foto_profil !== googlePicture) {
+      user.foto_profil = googlePicture;
+      await user.save();
     }
 
     const token = jwt.sign(
@@ -247,7 +270,8 @@ const googleLogin = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Gagal login Google.', error: error.message });
+    console.error('GOOGLE LOGIN ERROR:', error);
+    res.status(500).json({ message: 'Gagal login Google: ' + error.message, error: error.message });
   }
 };
 
