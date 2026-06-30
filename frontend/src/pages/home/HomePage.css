@@ -1042,6 +1042,7 @@
 
   .hero-stats,
   .service-grid,
+  .hot-news-grid,
   .feature-list {
     grid-template-columns: 1fr;
   }
