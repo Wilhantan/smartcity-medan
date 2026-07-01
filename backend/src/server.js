@@ -13,10 +13,19 @@ const indexRoute = require('./routes/index');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-  origin: 'http://localhost:3000',
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    // Allow local development and any Vercel deployments
+    if (origin === 'http://localhost:3000' || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
-}));
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
