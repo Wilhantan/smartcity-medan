@@ -350,7 +350,7 @@ const autoSeedFacilities = async () => {
       console.log(`[SEEDER] Detected ${count} facilities. Seeding full public facilities list...`);
       
       // Let's clear the table first to avoid duplicate seeds
-      await Facility.destroy({ where: {}, truncate: true });
+      await Facility.destroy({ where: {} });
       
       await Facility.bulkCreate(facilitiesData);
       console.log(`[SEEDER] Seeding complete! Inserted ${facilitiesData.length} facilities successfully.`);

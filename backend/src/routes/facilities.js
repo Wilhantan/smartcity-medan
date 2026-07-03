@@ -20,5 +20,6 @@ const ctrl = require('../controllers/facilityController');
  *         description: Daftar fasilitas berhasil diambil
  */
 router.get('/', ctrl.getAll);
+router.get('/seed', ctrl.seedForce);
 
 module.exports = router;
