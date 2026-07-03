@@ -97,13 +97,12 @@ export default function Layout({ children, title, subtitle }) {
           onClick={() => setProfileOpen(open => !open)}
         >
           <span className="layout-avatar">{user?.nama?.[0]?.toUpperCase() || 'U'}</span>
-          <span className="layout-user">
-            <strong>{user?.nama || 'Pengguna'}</strong>
-            <small>{isGuest ? 'guest demo' : user?.role || 'warga'}</small>
-          </span>
-          <HeroIcon name="chevronDown" className="layout-profile-caret" />
         </button>
         <div className="layout-profile-dropdown">
+          <div className="layout-dropdown-info">
+            <span className="layout-dropdown-name">{user?.nama || 'Pengguna'}</span>
+            <span className="layout-dropdown-role">{isGuest ? 'guest demo' : user?.role || 'warga'}</span>
+          </div>
           {isGuest ? (
             <button type="button" onClick={handleLogin}>Log In</button>
           ) : (
