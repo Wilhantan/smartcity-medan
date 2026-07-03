@@ -29,6 +29,7 @@ export default function Register() {
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
+  const [signupToken, setSignupToken] = useState('');
 
   useEffect(() => {
     if (location.state?.email && location.state?.step) {
@@ -111,6 +112,7 @@ export default function Register() {
       const res = await api.post('/auth/register', form);
       if (res.data.status === 'OTP_SENT') {
         setSuccess('Kode verifikasi OTP telah dikirim ke email Anda.');
+        setSignupToken(res.data.signupToken || '');
         setStep(2);
         setResendCountdown(60);
       } else {
@@ -133,7 +135,7 @@ export default function Register() {
     setError('');
     setSuccess('');
     try {
-      const res = await api.post('/auth/verify-otp', { email: form.email, otp });
+      const res = await api.post('/auth/verify-otp', { email: form.email, otp, signupToken });
       setSuccess(res.data.message || 'Verifikasi berhasil! Akun Anda siap digunakan.');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
@@ -149,8 +151,11 @@ export default function Register() {
     setError('');
     setSuccess('');
     try {
-      await api.post('/auth/resend-otp', { email: form.email });
+      const res = await api.post('/auth/resend-otp', { email: form.email, signupToken });
       setSuccess('Kode OTP baru telah terkirim.');
+      if (res.data.signupToken) {
+        setSignupToken(res.data.signupToken);
+      }
       setResendCountdown(60);
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal mengirim ulang OTP.');

@@ -70,7 +70,7 @@ const register = async (req, res) => {
         return res.status(400).json({ message: 'Email sudah terdaftar.' });
       }
 
-      // If the user is unverified, regenerate OTP and update password/details
+      // Fallback for existing unverified user in the db:
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const hashedPassword = await bcrypt.hash(password, 10);
       const hashedAnswer = await bcrypt.hash(security_answer.toLowerCase().trim(), 10);
@@ -93,28 +93,22 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedAnswer = await bcrypt.hash(security_answer.toLowerCase().trim(), 10);
 
-    const user = await User.create({
-      nama, email,
+    // Create signed token with user information and registration details
+    const signupData = {
+      nama,
+      email,
       password: hashedPassword,
       kota: kota || 'Medan',
       security_question,
       security_answer: hashedAnswer,
-      is_verified: false,
-      verification_otp: otp,
-      otp_expires_at: new Date(Date.now() + 5 * 60 * 1000)
-    });
+      otp
+    };
 
-    saveUserToJson(user);
+    const signupToken = jwt.sign(signupData, process.env.JWT_SECRET || 'secret', { expiresIn: '15m' });
 
     await sendOtpEmail(email, otp);
 
-    await Log.create({
-      nama: user.nama,
-      aksi: 'REGISTER_PENDING',
-      detail: `Mendaftar dengan email ${user.email}, menunggu verifikasi OTP.`
-    });
-
-    return res.status(200).json({ status: 'OTP_SENT', email, message: 'OTP terkirim ke email.' });
+    return res.status(200).json({ status: 'OTP_SENT', signupToken, email, message: 'OTP terkirim ke email.' });
   } catch (error) {
     res.status(500).json({ message: 'Gagal registrasi.', error: error.message });
   }
@@ -123,7 +117,57 @@ const register = async (req, res) => {
 // ===== VERIFY OTP =====
 const verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, otp, signupToken } = req.body;
+
+    if (signupToken) {
+      let decoded;
+      try {
+        decoded = jwt.verify(signupToken, process.env.JWT_SECRET || 'secret');
+      } catch (err) {
+        return res.status(400).json({ message: 'Sesi pendaftaran kadaluwarsa. Silakan mendaftar kembali.' });
+      }
+
+      if (decoded.otp !== otp) {
+        return res.status(400).json({ message: 'Kode OTP yang Anda masukkan salah.' });
+      }
+
+      const existing = await User.findOne({ where: { email: decoded.email } });
+      if (existing) {
+        if (existing.is_verified) {
+          return res.status(400).json({ message: 'Email sudah terdaftar.' });
+        }
+        // If unverified db record exists, update and verify it
+        existing.is_verified = true;
+        existing.verification_otp = null;
+        existing.otp_expires_at = null;
+        await existing.save();
+        saveUserToJson(existing);
+        return res.json({ success: true, message: 'Email berhasil diverifikasi! Silakan login.' });
+      }
+
+      // Create new user in the database
+      const user = await User.create({
+        nama: decoded.nama,
+        email: decoded.email,
+        password: decoded.password,
+        kota: decoded.kota || 'Medan',
+        security_question: decoded.security_question,
+        security_answer: decoded.security_answer,
+        is_verified: true
+      });
+
+      saveUserToJson(user);
+
+      await Log.create({
+        nama: user.nama,
+        aksi: 'REGISTER_VERIFIED',
+        detail: `Pendaftaran berhasil. Email ${user.email} telah diverifikasi.`
+      });
+
+      return res.json({ success: true, message: 'Registrasi berhasil dan email terverifikasi! Silakan login.' });
+    }
+
+    // Database-based verification fallback
     if (!email || !otp) {
       return res.status(400).json({ message: 'Email dan kode OTP wajib diisi.' });
     }
@@ -167,7 +211,30 @@ const verifyOtp = async (req, res) => {
 // ===== RESEND OTP =====
 const resendOtp = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, signupToken } = req.body;
+
+    if (signupToken) {
+      let decoded;
+      try {
+        decoded = jwt.verify(signupToken, process.env.JWT_SECRET || 'secret');
+      } catch (err) {
+        return res.status(400).json({ message: 'Sesi pendaftaran kadaluwarsa. Silakan mendaftar kembali.' });
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const newSignupData = { ...decoded, otp };
+      delete newSignupData.iat;
+      delete newSignupData.exp;
+
+      const newSignupToken = jwt.sign(newSignupData, process.env.JWT_SECRET || 'secret', { expiresIn: '15m' });
+
+      await sendOtpEmail(decoded.email, otp);
+
+      return res.json({ success: true, signupToken: newSignupToken, message: 'Kode OTP baru telah dikirim ke email.' });
+    }
+
+    // Database-based resend fallback
     if (!email) {
       return res.status(400).json({ message: 'Email wajib diisi.' });
     }
