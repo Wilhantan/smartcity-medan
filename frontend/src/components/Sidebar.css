@@ -574,3 +574,78 @@
     }
   }
 }
+
+/* Global Dashboard Search Suggestions */
+.dashboard-search-suggestions {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #edf0f7;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 54px rgba(17, 30, 67, 0.16);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.dashboard-search-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
+  text-decoration: none;
+  color: #3d4969;
+  transition: background 0.18s ease, transform 0.18s ease;
+  cursor: pointer;
+}
+
+.dashboard-search-suggestion-item:hover {
+  background: #eef4ff;
+  color: #043cb1;
+  transform: translateX(4px);
+}
+
+.suggestion-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(4, 60, 177, 0.08);
+  display: grid;
+  place-items: center;
+  color: #043cb1;
+  flex-shrink: 0;
+}
+
+.suggestion-item-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.suggestion-item-text strong {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.suggestion-item-text small {
+  font-size: 11px;
+  color: #8b93a7;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.dashboard-search-no-results {
+  padding: 16px;
+  color: #8b93a7;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+

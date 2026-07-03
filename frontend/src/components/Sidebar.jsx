@@ -45,16 +45,47 @@ export default function Sidebar({ mobileActions = null }) {
   const { user } = useAuth();
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState('');
   const searchInputRef = useRef(null);
   const mobileSearchInputRef = useRef(null);
   const groups = navGroups.filter(group => !group.adminOnly || user?.role === 'admin');
 
+  const SEARCHABLE_PAGES = [
+    { to: '/dashboard', label: 'Dashboard Kota', desc: 'Statistik, populasi, dan ringkasan kota', tags: ['dashboard', 'statistik', 'populasi', 'warga', 'ringkasan'] },
+    { to: '/peta', label: 'Peta Interaktif', desc: 'Lokasi fasilitas, rumah sakit, sekolah, taman', tags: ['peta', 'gis', 'lokasi', 'fasilitas', 'rs', 'sekolah', 'masjid', 'taman', 'pasar', 'kantor pemerintah'] },
+    { to: '/lalu-lintas', label: 'Lalu Lintas & CCTV Persimpangan', desc: 'Pantau CCTV ATCS Dishub live', tags: ['cctv', 'lalu lintas', 'jalan', 'macet', 'atcs', 'dishub', 'live', 'streaming'] },
+    { to: '/udara', label: 'Kualitas Udara (AQI)', desc: 'Indeks polusi udara PM2.5 & ISPU', tags: ['udara', 'aqi', 'polusi', 'pm2.5', 'ispu', 'cuaca', 'sehat'] },
+    { to: '/air-bersih', label: 'Jaringan Air Bersih', desc: 'Status distribusi air PDAM Tirtanadi', tags: ['air', 'air bersih', 'pdam', 'tirtanadi', 'pasokan', 'pipa'] },
+    { to: '/sampah', label: 'Pengelolaan Sampah', desc: 'Jadwal armada truk kebersihan & TPS', tags: ['sampah', 'kebersihan', 'tps', 'bank sampah', 'truk', 'jadwal'] },
+    { to: '/energi', label: 'Penerangan Jalan & Energi', desc: 'Statistik konsumsi daya PJU kota', tags: ['energi', 'pju', 'listrik', 'daya', 'penerangan', 'jalan'] },
+    { to: '/transportasi', label: 'Rute Transportasi Umum', desc: 'Jalur angkot, koridor BRT Mebidang, tarif', tags: ['transportasi', 'rute', 'bus', 'angkot', 'brt', 'terminal', 'tarif'] },
+    { to: '/layanan-kota', label: 'Pengaduan Warga & Forum', desc: 'Buat laporan infrastruktur & vote kebijakan', tags: ['pengaduan', 'laporan', 'masalah', 'voting', 'kebijakan', 'aspirasi', 'forum', 'thread'] },
+    { to: '/layanan-publik', label: 'Bursa Kerja & UMKM Lokal', desc: 'Lowongan kerja terverifikasi & produk UMKM', tags: ['kerja', 'lowongan', 'loker', 'umkm', 'produk', 'bursa kerja'] },
+    { to: '/profil', label: 'Profil Saya & Pengaturan', desc: 'Ubah biodata dan detail akun', tags: ['profil', 'akun', 'password', 'biodata', 'pengaturan'] },
+    { to: '/admin', label: 'Panel Admin', desc: 'Moderasi sistem, log aktivitas, master data', tags: ['admin', 'panel', 'moderasi', 'log', 'master data'], adminOnly: true },
+  ];
+
+  const availablePages = SEARCHABLE_PAGES.filter(
+    (page) => !page.adminOnly || user?.role === 'admin'
+  );
+
+  const suggestions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return availablePages.filter(page =>
+      page.label.toLowerCase().includes(q) ||
+      page.desc.toLowerCase().includes(q) ||
+      page.tags.some(tag => tag.toLowerCase().includes(q))
+    );
+  }, [searchQuery, availablePages]);
+
   const isGroupActive = (group) => group.items.some(item => location.pathname === item.to);
   const closeMobileMenu = () => {
     setMobileOpen(false);
     setSearchOpen(false);
+    setSearchQuery('');
   };
   const toggleSearch = () => {
     setSearchOpen(open => {
@@ -64,6 +95,8 @@ export default function Sidebar({ mobileActions = null }) {
           const input = mobileOpen ? mobileSearchInputRef.current : searchInputRef.current;
           input?.focus();
         }, 0);
+      } else {
+        setSearchQuery('');
       }
       return nextOpen;
     });
@@ -83,10 +116,59 @@ export default function Sidebar({ mobileActions = null }) {
         type="search"
         placeholder="Search dashboard"
         aria-label="Search dashboard"
+        value={searchQuery}
+        onChange={(event) => setSearchQuery(event.target.value)}
         onBlur={(event) => {
-          if (!event.target.value) setSearchOpen(false);
+          if (!event.target.value) {
+            window.setTimeout(() => {
+              setSearchOpen(false);
+              setSearchQuery('');
+            }, 200);
+          }
         }}
       />
+      {searchOpen && searchQuery && (
+        <div className="dashboard-search-suggestions">
+          {suggestions.length > 0 ? (
+            suggestions.map(page => (
+              <Link
+                key={page.to}
+                to={page.to}
+                className="dashboard-search-suggestion-item"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSearchOpen(false);
+                  closeMobileMenu();
+                }}
+              >
+                <div className="suggestion-item-icon">
+                  <HeroIcon name={
+                    page.to === '/dashboard' ? 'dashboard' :
+                    page.to === '/peta' ? 'map' :
+                    page.to === '/lalu-lintas' ? 'road' :
+                    page.to === '/udara' ? 'cloud' :
+                    page.to === '/air-bersih' ? 'water' :
+                    page.to === '/sampah' ? 'trash' :
+                    page.to === '/energi' ? 'energy' :
+                    page.to === '/transportasi' ? 'truck' :
+                    page.to === '/layanan-kota' ? 'government' :
+                    page.to === '/layanan-publik' ? 'sparkles' :
+                    page.to === '/profil' ? 'profile' : 'admin'
+                  } />
+                </div>
+                <div className="suggestion-item-text">
+                  <strong>{page.label}</strong>
+                  <small>{page.desc}</small>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="dashboard-search-no-results">
+              Tidak ditemukan hasil untuk "{searchQuery}"
+            </div>
+          )}
+        </div>
+      )}
     </label>
   );
 
