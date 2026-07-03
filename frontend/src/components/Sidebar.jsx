@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useAuth } from '../context/AuthContext';
 import BrandLogo from './BrandLogo';
