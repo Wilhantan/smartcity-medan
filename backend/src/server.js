@@ -3,12 +3,15 @@ const cors = require('cors');
 const path = require('path');
 require('mysql2');
 require('dotenv').config();
+const swaggerUi = require("swagger-ui-express");
+require("dotenv").config();
 
 const { connectMySQL } = require('./config/mysql');
 const { connectMongoDB } = require('./config/mongodb');
 const { seedDefaultAdmin } = require('./seeders/defaultAdminSeed');
 const { seedUsersFromJson } = require('./utils/userJsonStore');
 const indexRoute = require('./routes/index');
+const swaggerSpec = require("./config/swagger");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -51,8 +54,19 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Static folder untuk file upload
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: "Smart City Medan API Docs",
+  }),
+);
+app.get("/api-docs.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
 
 app.use('/api', indexRoute);
 app.use('/api/auth', require('./routes/auth'));
@@ -67,7 +81,6 @@ app.use('/api/public-services', require('./routes/publicServices'));
 app.use('/api/trash', require('./routes/trash'));
 app.use('/api/admin', require('./routes/admin'));
 
-//SERVE REACT BUILD (untuk mode demo/production)
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../frontend/dist')));
   app.get('*', (req, res) => {
