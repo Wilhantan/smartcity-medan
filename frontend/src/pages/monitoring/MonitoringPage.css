@@ -169,3 +169,11 @@
   color: #111E43;
   gap: 12px;
 }
+
+@media (max-width: 600px) {
+  .mon-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

@@ -211,42 +211,44 @@ export default function StatusAirBersih() {
             <h2>Kondisi Infrastruktur Pipa PDAM</h2>
             <span>Data distribusi dan kondisi jaringan pipa</span>
           </div>
-          <table className="air-table">
-            <thead>
-              <tr>
-                <th>Wilayah</th>
-                <th>Kecamatan</th>
-                <th>Pelanggan</th>
-                <th>Kapasitas</th>
-                <th>Distribusi</th>
-                <th>Kehilangan</th>
-                <th>Kondisi Pipa</th>
-                <th>Update</th>
-              </tr>
-            </thead>
-            <tbody>
-              {distributions.map(item => (
-                <tr key={item.id}>
-                  <td>{item.wilayah}</td>
-                  <td>{item.kecamatan}</td>
-                  <td>{(item.pelanggan_aktif || 0).toLocaleString('id-ID')}</td>
-                  <td>{item.kapasitas_lps} lps</td>
-                  <td>{item.distribusi_lps} lps</td>
-                  <td>
-                    <span style={{ color: item.kehilangan_pct > 20 ? RED : item.kehilangan_pct > 12 ? ORANGE : GREEN, fontWeight: 600 }}>
-                      {item.kehilangan_pct}%
-                    </span>
-                  </td>
-                  <td>
-                    <span className="air-pipa-badge" style={{ background: pipaColor(item.status_pipa) }}>
-                      {item.status_pipa}
-                    </span>
-                  </td>
-                  <td className="air-update">{item.update_terakhir}</td>
+          <div className="air-table-wrap">
+            <table className="air-table">
+              <thead>
+                <tr>
+                  <th>Wilayah</th>
+                  <th>Kecamatan</th>
+                  <th>Pelanggan</th>
+                  <th>Kapasitas</th>
+                  <th>Distribusi</th>
+                  <th>Kehilangan</th>
+                  <th>Kondisi Pipa</th>
+                  <th>Update</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {distributions.map(item => (
+                  <tr key={item.id}>
+                    <td>{item.wilayah}</td>
+                    <td>{item.kecamatan}</td>
+                    <td>{(item.pelanggan_aktif || 0).toLocaleString('id-ID')}</td>
+                    <td>{item.kapasitas_lps} lps</td>
+                    <td>{item.distribusi_lps} lps</td>
+                    <td>
+                      <span style={{ color: item.kehilangan_pct > 20 ? RED : item.kehilangan_pct > 12 ? ORANGE : GREEN, fontWeight: 600 }}>
+                        {item.kehilangan_pct}%
+                      </span>
+                    </td>
+                    <td>
+                      <span className="air-pipa-badge" style={{ background: pipaColor(item.status_pipa) }}>
+                        {item.status_pipa}
+                      </span>
+                    </td>
+                    <td className="air-update">{item.update_terakhir}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

@@ -192,3 +192,34 @@
   color: #E3B473;
   margin-bottom: 4px;
 }
+
+.air-table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.air-table {
+  min-width: 680px;
+}
+
+@media (max-width: 768px) {
+  .air-panel {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .air-panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .air-stat-card {
+    padding: 16px 12px;
+  }
+  
+  .air-stat-value {
+    font-size: 24px;
+  }
+}

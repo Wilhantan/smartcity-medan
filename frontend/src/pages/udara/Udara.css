@@ -43,6 +43,21 @@
   gap: 14px;
 }
 
+@media (max-width: 900px) {
+  .aqi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .aqi-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  .aqi-summary-row {
+    justify-content: center;
+  }
+}
+
 .aqi-card {
   background: var(--white);
   border-radius: var(--radius);
