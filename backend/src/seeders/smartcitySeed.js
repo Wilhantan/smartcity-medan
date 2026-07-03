@@ -8,6 +8,7 @@ const Trash = require('../models/Trash');
 const { TransportRoute, TransportSchedule } = require('../models/Transport');
 const { Policy, PolicyVote } = require('../models/CityService');
 const cityServices = require('../controllers/cityServiceController');
+const { facilitiesData } = require('./facilitiesSeeder');
 const bcrypt = require('bcryptjs');
 require('../models/CityService');
 require('../models/PublicService');
@@ -83,21 +84,7 @@ const seed = async () => {
   ]);
 
   // ===== FACILITIES =====
-  await Facility.bulkCreate([
-    { nama: 'RSUD Dr. Pirngadi Medan', jenis: 'Rumah Sakit', alamat: 'Jl. Prof. H.M. Yamin SH No.47', kecamatan: 'Medan Timur', telepon: '061-4512800', jam_buka: '24 Jam', lat: 3.5913, lng: 98.6989, deskripsi: 'Rumah sakit umum milik pemerintah kota Medan' },
-    { nama: 'RS Columbia Asia Medan', jenis: 'Rumah Sakit', alamat: 'Jl. Listrik No.2A', kecamatan: 'Medan Petisah', telepon: '061-4566368', jam_buka: '24 Jam', lat: 3.5812, lng: 98.6658, deskripsi: 'Rumah sakit swasta internasional' },
-    { nama: 'RS Haji Medan', jenis: 'Rumah Sakit', alamat: 'Jl. RS Haji', kecamatan: 'Medan Johor', telepon: '061-7864741', jam_buka: '24 Jam', lat: 3.5389, lng: 98.6912, deskripsi: 'Rumah sakit daerah Provinsi Sumatera Utara' },
-    { nama: 'SMA Negeri 1 Medan', jenis: 'Sekolah', alamat: 'Jl. Teuku Cik Ditiro No.1', kecamatan: 'Medan Baru', telepon: '061-4572748', jam_buka: '07:00 - 15:00', lat: 3.5793, lng: 98.6691, deskripsi: 'SMA unggulan kota Medan' },
-    { nama: 'SMA Negeri 4 Medan', jenis: 'Sekolah', alamat: 'Jl. Budi Kemasyarakatan No.3', kecamatan: 'Medan Sunggal', telepon: '061-8441490', jam_buka: '07:00 - 15:00', lat: 3.5950, lng: 98.6421, deskripsi: 'Sekolah menengah atas negeri favorit' },
-    { nama: 'Universitas Sumatera Utara', jenis: 'Sekolah', alamat: 'Jl. Universitas No.9', kecamatan: 'Medan Baru', telepon: '061-8211633', jam_buka: '07:00 - 17:00', lat: 3.5700, lng: 98.6500, deskripsi: 'Universitas negeri terkemuka di Sumatera' },
-    { nama: 'Taman Sri Deli', jenis: 'Taman', alamat: 'Jl. Brigadir Jenderal Katamso', kecamatan: 'Medan Kota', telepon: null, jam_buka: '06:00 - 22:00', lat: 3.5912, lng: 98.6812, deskripsi: 'Taman kota bersejarah di pusat Medan' },
-    { nama: 'Taman Cadika Pramuka', jenis: 'Taman', alamat: 'Jl. Karya Wisata', kecamatan: 'Medan Johor', telepon: null, jam_buka: '06:00 - 21:00', lat: 3.5501, lng: 98.7005, deskripsi: 'Taman rekreasi dan area pramuka' },
-    { nama: 'Taman Ahmad Yani', jenis: 'Taman', alamat: 'Jl. Diponegoro', kecamatan: 'Medan Polonia', telepon: null, jam_buka: '05:00 - 23:00', lat: 3.5740, lng: 98.6750, deskripsi: 'Taman hijau di pusat kota' },
-    { nama: 'Balai Kota Medan', jenis: 'Kantor Pemerintah', alamat: 'Jl. Kapten Maulana Lubis No.2', kecamatan: 'Medan Petisah', telepon: '061-4512412', jam_buka: 'Sen-Jum 08:00-16:00', lat: 3.5908, lng: 98.6693, deskripsi: 'Kantor walikota Medan' },
-    { nama: 'Kantor Gubernur Sumatera Utara', jenis: 'Kantor Pemerintah', alamat: 'Jl. Diponegoro No.30', kecamatan: 'Medan Polonia', telepon: '061-4156000', jam_buka: 'Sen-Jum 08:00-16:00', lat: 3.5775, lng: 98.6720, deskripsi: 'Gedung pemerintah provinsi Sumatera Utara' },
-    { nama: 'Masjid Raya Al-Mashun', jenis: 'Masjid', alamat: 'Jl. Sisingamangaraja', kecamatan: 'Medan Kota', telepon: null, jam_buka: '05:00 - 22:00', lat: 3.5883, lng: 98.6876, deskripsi: 'Masjid bersejarah warisan kesultanan Deli' },
-    { nama: 'Pasar Petisah', jenis: 'Pasar', alamat: 'Jl. Kota Baru', kecamatan: 'Medan Petisah', telepon: null, jam_buka: '06:00 - 18:00', lat: 3.59112, lng: 98.66658, deskripsi: 'Pasar tradisional terbesar di Medan' },
-  ]);
+  await Facility.bulkCreate(facilitiesData);
 
   // ===== TRANSPORT =====
   const routes = await TransportRoute.bulkCreate([

@@ -10,6 +10,7 @@ const { connectMySQL } = require('./config/mysql');
 const { connectMongoDB } = require('./config/mongodb');
 const { seedDefaultAdmin } = require('./seeders/defaultAdminSeed');
 const { seedUsersFromJson } = require('./utils/userJsonStore');
+const { autoSeedFacilities } = require('./seeders/facilitiesSeeder');
 const indexRoute = require('./routes/index');
 const swaggerSpec = require("./config/swagger");
 
@@ -38,6 +39,7 @@ const initDb = async () => {
     await connectMySQL();
     await seedDefaultAdmin();
     await seedUsersFromJson();
+    await autoSeedFacilities();
     await connectMongoDB();
     isConnected = true;
   }
