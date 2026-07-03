@@ -34,6 +34,25 @@ const connectMySQL = async () => {
     await sequelize.authenticate();
     console.log("MySQL terhubung");
     try {
+      const [results] = await sequelize.query("SHOW COLUMNS FROM users LIKE 'is_verified'");
+      if (results.length === 0) {
+        console.log("Menambahkan kolom is_verified ke tabel users...");
+        await sequelize.query("ALTER TABLE users ADD COLUMN is_verified TINYINT(1) DEFAULT 0");
+      }
+      const [resultsOtp] = await sequelize.query("SHOW COLUMNS FROM users LIKE 'verification_otp'");
+      if (resultsOtp.length === 0) {
+        console.log("Menambahkan kolom verification_otp ke tabel users...");
+        await sequelize.query("ALTER TABLE users ADD COLUMN verification_otp VARCHAR(10) DEFAULT NULL");
+      }
+      const [resultsExp] = await sequelize.query("SHOW COLUMNS FROM users LIKE 'otp_expires_at'");
+      if (resultsExp.length === 0) {
+        console.log("Menambahkan kolom otp_expires_at ke tabel users...");
+        await sequelize.query("ALTER TABLE users ADD COLUMN otp_expires_at DATETIME DEFAULT NULL");
+      }
+    } catch (columnError) {
+      console.warn("Info: Melompati penambahan kolom manual (tabel belum terbentuk atau kolom sudah ada):", columnError.message);
+    }
+    try {
       await sequelize.sync({ alter: true });
       console.log("Tabel MySQL tersinkronisasi (alter: true)");
     } catch (alterError) {

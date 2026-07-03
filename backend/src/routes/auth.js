@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, guestLogin, googleLogin, getForgotQuestion, resetPassword, logout } = require('../controllers/authController');
+const { register, verifyOtp, resendOtp, login, guestLogin, googleLogin, getForgotQuestion, resetPassword, logout } = require('../controllers/authController');
 const { authMiddleware } = require('../middleware/auth');
 
 /**
@@ -31,6 +31,8 @@ const { authMiddleware } = require('../middleware/auth');
  *         description: Field wajib kosong atau email sudah terdaftar
  */
 router.post('/register', register);
+router.post('/verify-otp', verifyOtp);
+router.post('/resend-otp', resendOtp);
 
 /**
  * @swagger

@@ -66,7 +66,11 @@ export default function Login() {
       login(res.data.user, res.data.token);
       navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Gagal login.');
+      if (err.response?.data?.message === 'UNVERIFIED') {
+        navigate('/register', { state: { email: err.response.data.email, step: 2 } });
+      } else {
+        setError(err.response?.data?.message || 'Gagal login.');
+      }
     } finally {
       setLoading(false);
     }

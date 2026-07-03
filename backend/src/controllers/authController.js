@@ -1,9 +1,59 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const Log = require('../models/Log');
 const { saveUserToJson } = require('../utils/userJsonStore');
 require('dotenv').config();
+
+// Helper to send OTP email
+const sendOtpEmail = async (email, otp) => {
+  try {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.log(`\n=============================================`);
+      console.log(`[SMTP MOCK] OTP untuk email ${email}: ${otp}`);
+      console.log(`=============================================\n`);
+      return true;
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_PORT === '465',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: `"Smart City Medan" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: 'Kode Verifikasi OTP - Smart City Medan',
+      html: `
+        <div style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; padding: 24px; background: #f8faff; border-radius: 12px; color: #111e43; max-width: 500px; margin: 0 auto; border: 1.5px solid #edf0f7;">
+          <h2 style="color: #043cb1; margin-top: 0; font-size: 20px;">Verifikasi Akun Smart City</h2>
+          <p style="font-size: 14px; line-height: 1.5;">Halo,</p>
+          <p style="font-size: 14px; line-height: 1.5;">Terima kasih telah mendaftar di <strong>Smart City Medan</strong>. Silakan gunakan kode OTP di bawah ini untuk memverifikasi alamat email Anda:</p>
+          <div style="font-size: 32px; font-weight: 800; text-align: center; color: #043cb1; background: #eaf1ff; padding: 12px; border-radius: 8px; margin: 20px 0; letter-spacing: 4px;">
+            ${otp}
+          </div>
+          <p style="font-size: 12px; color: #718096; line-height: 1.5; margin-bottom: 0;">Kode OTP ini berlaku selama <strong>5 menit</strong>. Jangan bagikan kode ini kepada siapa pun demi keamanan akun Anda.</p>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email OTP terkirim ke ${email}: ${info.messageId}`);
+    return true;
+  } catch (error) {
+    console.error(`Gagal mengirim email OTP ke ${email}:`, error.message);
+    console.log(`\n=============================================`);
+    console.log(`[FALLBACK OTP] OTP untuk email ${email}: ${otp}`);
+    console.log(`=============================================\n`);
+    return false;
+  }
+};
 
 // ===== REGISTER =====
 const register = async (req, res) => {
@@ -16,9 +66,30 @@ const register = async (req, res) => {
 
     const existing = await User.findOne({ where: { email } });
     if (existing) {
-      return res.status(400).json({ message: 'Email sudah terdaftar.' });
+      if (existing.is_verified) {
+        return res.status(400).json({ message: 'Email sudah terdaftar.' });
+      }
+
+      // If the user is unverified, regenerate OTP and update password/details
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedAnswer = await bcrypt.hash(security_answer.toLowerCase().trim(), 10);
+
+      existing.nama = nama;
+      existing.password = hashedPassword;
+      existing.kota = kota || 'Medan';
+      existing.security_question = security_question;
+      existing.security_answer = hashedAnswer;
+      existing.verification_otp = otp;
+      existing.otp_expires_at = new Date(Date.now() + 5 * 60 * 1000);
+      await existing.save();
+
+      await sendOtpEmail(email, otp);
+
+      return res.status(200).json({ status: 'OTP_SENT', email, message: 'OTP terkirim ke email.' });
     }
 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedAnswer = await bcrypt.hash(security_answer.toLowerCase().trim(), 10);
 
@@ -27,21 +98,99 @@ const register = async (req, res) => {
       password: hashedPassword,
       kota: kota || 'Medan',
       security_question,
-      security_answer: hashedAnswer
+      security_answer: hashedAnswer,
+      is_verified: false,
+      verification_otp: otp,
+      otp_expires_at: new Date(Date.now() + 5 * 60 * 1000)
     });
 
     saveUserToJson(user);
 
+    await sendOtpEmail(email, otp);
+
     await Log.create({
-      userId: user.id,
       nama: user.nama,
-      aksi: 'REGISTER',
-      detail: `User baru terdaftar: ${email}`
+      aksi: 'REGISTER_PENDING',
+      detail: `Mendaftar dengan email ${user.email}, menunggu verifikasi OTP.`
     });
 
-    res.status(201).json({ message: 'Registrasi berhasil. Silakan login.' });
+    return res.status(200).json({ status: 'OTP_SENT', email, message: 'OTP terkirim ke email.' });
   } catch (error) {
     res.status(500).json({ message: 'Gagal registrasi.', error: error.message });
+  }
+};
+
+// ===== VERIFY OTP =====
+const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ message: 'Email dan kode OTP wajib diisi.' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'User tidak ditemukan.' });
+    }
+
+    if (user.is_verified) {
+      return res.status(400).json({ message: 'Akun Anda sudah terverifikasi. Silakan login.' });
+    }
+
+    if (user.verification_otp !== otp) {
+      return res.status(400).json({ message: 'Kode OTP yang Anda masukkan salah.' });
+    }
+
+    if (new Date() > new Date(user.otp_expires_at)) {
+      return res.status(400).json({ message: 'Kode OTP telah kedaluwarsa. Silakan kirim ulang.' });
+    }
+
+    user.is_verified = true;
+    user.verification_otp = null;
+    user.otp_expires_at = null;
+    await user.save();
+
+    saveUserToJson(user);
+
+    await Log.create({
+      nama: user.nama,
+      aksi: 'VERIFY_OTP_SUCCESS',
+      detail: `Email ${user.email} berhasil diverifikasi.`
+    });
+
+    return res.json({ success: true, message: 'Email berhasil diverifikasi! Silakan login.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Gagal memverifikasi OTP.', error: error.message });
+  }
+};
+
+// ===== RESEND OTP =====
+const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email wajib diisi.' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'User tidak ditemukan.' });
+    }
+
+    if (user.is_verified) {
+      return res.status(400).json({ message: 'Akun Anda sudah terverifikasi.' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.verification_otp = otp;
+    user.otp_expires_at = new Date(Date.now() + 5 * 60 * 1000);
+    await user.save();
+
+    await sendOtpEmail(email, otp);
+
+    return res.json({ success: true, message: 'Kode OTP baru telah dikirim ke email.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Gagal mengirim ulang OTP.', error: error.message });
   }
 };
 
@@ -62,6 +211,18 @@ const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Email atau password salah.' });
+    }
+
+    if (!user.is_verified) {
+      // Auto-trigger sending verification email again on login attempt
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      user.verification_otp = otp;
+      user.otp_expires_at = new Date(Date.now() + 5 * 60 * 1000);
+      await user.save();
+
+      await sendOtpEmail(user.email, otp);
+
+      return res.status(400).json({ message: 'UNVERIFIED', email: user.email });
     }
 
     const expiresIn = remember ? '30d' : process.env.JWT_EXPIRES_IN || '7d';
@@ -277,4 +438,4 @@ const googleLogin = async (req, res) => {
   }
 };
 
-module.exports = { register, login, guestLogin, googleLogin, getForgotQuestion, resetPassword, logout };
+module.exports = { register, verifyOtp, resendOtp, login, guestLogin, googleLogin, getForgotQuestion, resetPassword, logout };

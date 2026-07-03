@@ -48,6 +48,18 @@ const User = sequelize.define('User', {
   remember_token: {
     type: DataTypes.STRING(255),
     defaultValue: null
+  },
+  is_verified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  verification_otp: {
+    type: DataTypes.STRING(10),
+    defaultValue: null
+  },
+  otp_expires_at: {
+    type: DataTypes.DATE,
+    defaultValue: null
   }
 }, {
   tableName: 'users',
