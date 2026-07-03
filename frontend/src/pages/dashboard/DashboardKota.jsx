@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import HeroIcon from '../../components/HeroIcon';
 import api from '../../utils/api';
@@ -49,6 +49,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function DashboardKota() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState([]);
   const [summary, setSummary] = useState(null);
   const [overview, setOverview] = useState(null);
@@ -118,21 +119,41 @@ export default function DashboardKota() {
 
       {overview && (
         <div className="overview-grid">
-          <div className="overview-card" data-reveal="fade-up" style={{ '--reveal-delay': '240ms' }}>
-            <span className="overview-num">{overview.totalFasilitas}</span>
-            <span className="overview-lbl">Fasilitas Publik</span>
+          <div className="overview-card" onClick={() => navigate('/peta')} data-reveal="fade-up" style={{ '--reveal-delay': '240ms' }}>
+            <div className="overview-text">
+              <span className="overview-num">{overview.totalFasilitas}</span>
+              <span className="overview-lbl">Fasilitas Publik</span>
+            </div>
+            <div className="overview-icon">
+              <HeroIcon name="building" />
+            </div>
           </div>
-          <div className="overview-card" data-reveal="fade-up" style={{ '--reveal-delay': '300ms' }}>
-            <span className="overview-num">{overview.totalRute}</span>
-            <span className="overview-lbl">Rute Aktif</span>
+          <div className="overview-card" onClick={() => navigate('/transportasi')} data-reveal="fade-up" style={{ '--reveal-delay': '300ms' }}>
+            <div className="overview-text">
+              <span className="overview-num">{overview.totalRute}</span>
+              <span className="overview-lbl">Rute Aktif</span>
+            </div>
+            <div className="overview-icon">
+              <HeroIcon name="road" />
+            </div>
           </div>
-          <div className="overview-card" data-reveal="fade-up" style={{ '--reveal-delay': '360ms' }}>
-            <span className="overview-num">{overview.totalJalan}</span>
-            <span className="overview-lbl">Ruas Jalan Dipantau</span>
+          <div className="overview-card" onClick={() => navigate('/lalu-lintas')} data-reveal="fade-up" style={{ '--reveal-delay': '360ms' }}>
+            <div className="overview-text">
+              <span className="overview-num">{overview.totalJalan}</span>
+              <span className="overview-lbl">Ruas Jalan Dipantau</span>
+            </div>
+            <div className="overview-icon">
+              <HeroIcon name="eye" />
+            </div>
           </div>
-          <div className="overview-card" data-reveal="fade-up" style={{ '--reveal-delay': '420ms' }}>
-            <span className="overview-num">{overview.avgAqi}</span>
-            <span className="overview-lbl">Rata-rata AQI Kota</span>
+          <div className="overview-card" onClick={() => navigate('/udara')} data-reveal="fade-up" style={{ '--reveal-delay': '420ms' }}>
+            <div className="overview-text">
+              <span className="overview-num">{overview.avgAqi}</span>
+              <span className="overview-lbl">Rata-rata AQI Kota</span>
+            </div>
+            <div className="overview-icon">
+              <HeroIcon name="air" />
+            </div>
           </div>
         </div>
       )}
