@@ -7,9 +7,10 @@
   position: sticky;
   top: 0;
   z-index: 130;
-  background: #ffffff;
-  border-bottom: 1px solid #edf0f7;
+  background: rgba(255, 255, 255, 0.72);
+  border-bottom: 1px solid rgba(237, 240, 247, 0.6);
   backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .layout-topbar-inner {
@@ -255,7 +256,9 @@
 
 @media (max-width: 640px) {
   .layout-topbar {
-    background: rgba(245, 247, 251, 0.94);
+    background: rgba(245, 247, 251, 0.76);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
   }
 
   .layout-topbar-inner,
