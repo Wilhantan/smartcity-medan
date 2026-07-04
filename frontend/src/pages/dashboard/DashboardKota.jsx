@@ -48,6 +48,33 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+const NEWS_DATA = [
+  {
+    id: 1,
+    judul: "Revitalisasi Lapangan Merdeka Medan Ditargetkan Selesai Akhir Tahun Ini",
+    sumber: "Tribunnews Medan",
+    tanggal: "Hari ini • 09:30",
+    gambar: "https://images.unsplash.com/photo-1579621970795-87faff3f68b8?w=500&auto=format&fit=crop&q=60",
+    url: "https://medan.tribunnews.com/2026/01/01/revitalisasi-lapangan-merdeka-medan-ditargetkan-selesai-akhir-tahun-ini"
+  },
+  {
+    id: 2,
+    judul: "Pemko Medan Uji Coba Koridor Baru Bus Listrik Trans Metro Deli",
+    sumber: "Tribunnews Medan",
+    tanggal: "Kemarin • 14:15",
+    gambar: "https://images.unsplash.com/photo-1570129476815-ba368ac77013?w=500&auto=format&fit=crop&q=60",
+    url: "https://medan.tribunnews.com/2026/01/01/pemko-medan-uji-coba-koridor-baru-bus-listrik-trans-metro-deli"
+  },
+  {
+    id: 3,
+    judul: "Indeks Kualitas Udara Medan Masuk Kategori Baik Pagi Ini",
+    sumber: "Tribunnews Medan",
+    tanggal: "Kemarin • 08:00",
+    gambar: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&auto=format&fit=crop&q=60",
+    url: "https://medan.tribunnews.com/2026/01/01/indeks-kualitas-udara-medan-masuk-kategori-baik-pagi-ini"
+  }
+];
+
 export default function DashboardKota() {
   const navigate = useNavigate();
   const [stats, setStats] = useState([]);
@@ -110,11 +137,36 @@ export default function DashboardKota() {
 
   return (
     <Layout title="Dashboard Kota" subtitle="Statistik & Monitoring Smart City Medan">
+      {/* Berita Medan Terkini (Microsoft Edge news card feed style) */}
+      <div className="dashboard-news-section" data-reveal="fade-up" style={{ '--reveal-delay': '50ms' }}>
+        <div className="news-section-header">
+          <h3>
+            <HeroIcon name="newspaper" style={{ width: 20, height: 20, color: '#043cb1' }} />
+            Berita Medan Terkini
+          </h3>
+          <span>Sumber: Tribunnews</span>
+        </div>
+        <div className="dashboard-news-grid">
+          {NEWS_DATA.map((item) => (
+            <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" className="news-card-item">
+              <div className="news-card-img-wrap">
+                <img src={item.gambar} alt={item.judul} />
+                <span className="news-card-source">{item.sumber}</span>
+              </div>
+              <div className="news-card-body">
+                <h4 className="news-card-title">{item.judul}</h4>
+                <span className="news-card-time">{item.tanggal}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+
       <div className="stats-grid">
-        <StatCard icon="people" label="Total Warga" value={(summary?.populasi || 0).toLocaleString('id-ID')} unit=" jiwa" sub="8.5% naik dari periode lalu" color={BLUE} delay={0} />
-        <StatCard icon="map" label="Kepadatan" value={(summary?.kepadatan || 0).toLocaleString('id-ID')} unit=" /km²" sub="1.3% naik dari pekan lalu" color={GOLD} delay={60} />
-        <StatCard icon="energy" label="Total Energi" value={(summary?.energi_gwh || 0).toFixed(1)} unit=" GWh" sub="4.3% turun dari kemarin" color="#27c98b" trend="down" delay={120} />
-        <StatCard icon="cloud" label="AQI Rata-rata" value={(summary?.aqi_rata || 0).toFixed(0)} unit=" AQI" sub="1.8% naik dari kemarin" color="#ff8b8b" delay={180} />
+        <StatCard icon="people" label="Total Warga" value={(summary?.populasi || 0).toLocaleString('id-ID')} unit=" jiwa" sub="8.5% naik dari periode lalu" color={BLUE} delay={100} />
+        <StatCard icon="map" label="Kepadatan" value={(summary?.kepadatan || 0).toLocaleString('id-ID')} unit=" /km²" sub="1.3% naik dari pekan lalu" color={GOLD} delay={160} />
+        <StatCard icon="energy" label="Total Energi" value={(summary?.energi_gwh || 0).toFixed(1)} unit=" GWh" sub="4.3% turun dari kemarin" color="#27c98b" trend="down" delay={220} />
+        <StatCard icon="cloud" label="AQI Rata-rata" value={(summary?.aqi_rata || 0).toFixed(0)} unit=" AQI" sub="1.8% naik dari kemarin" color="#ff8b8b" delay={280} />
       </div>
 
       {overview && (
