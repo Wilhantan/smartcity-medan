@@ -335,8 +335,8 @@
   }
 
   .dashboard-mobile-inline-tools .layout-profile {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -345,9 +345,9 @@
   }
 
   .dashboard-mobile-inline-tools .layout-notification,
-  .dashboard-mobile-inline-tools .layout-avatar {
-    width: 40px;
-    height: 40px;
+  .dashboard-mobile-inline-tools .layout-avatar-img {
+    width: 42px;
+    height: 42px;
     box-sizing: border-box;
     margin: 0;
   }
@@ -359,8 +359,8 @@
   }
 
   .dashboard-nav-toggle {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     display: inline-grid;
     place-items: center;
     flex-shrink: 0;
